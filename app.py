@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, jsonify
+from flask import Flask, request, render_template, jsonify, Response
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
@@ -65,6 +65,25 @@ def add_user():
     db.session.add(new_user)
     db.session.commit()
     return users_schema.jsonify(new_user)
+
+#POST Endpoint
+#Login for user
+@app.route('/login', methods=['POST'])
+def login(): 
+    received_login_info = request.json
+    print(received_login_info)
+    received_email = received_login_info['email']
+    received_password = received_login_info['password']
+
+    #Check if the received email and password match any record in the database
+    user = Users.query.filter_by(email=received_email, password=received_password).first()
+
+    #if user exists, then its a success, return a 201 status code with a success message
+    if user:
+        return Response({"message": "User exists, login successful"}, 201, {'Content-Type': 'application/json'})
+    # else - if user does not exist, then return a 404 status code with an invalid email or password message
+    else:
+        return Response({"message": "Invalid username or password"}, 404, {'Content-Type': 'application/json'})
  
 
 #GET All Users - returns a list of current Users present in the database
