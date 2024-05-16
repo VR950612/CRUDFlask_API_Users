@@ -62,9 +62,25 @@ users_schema = UsersSchema() #Users_schema will be used when dealing with users
 def add_user():
     new_user = users_schema.load(request.json)
     print(new_user)
-    db.session.add(new_user)
-    db.session.commit()
-    return users_schema.jsonify(new_user)
+
+    received_data = request.json
+    print(received_data)
+    received_email = received_data['email']
+    print(received_email)
+
+    #Code to prevent adding users with duplicate email addresses
+    #Check if the received email matches any record in the database
+    user = Users.query.filter_by(email=received_email).first()
+    #if user exists, then its a failure, return a 200 status code with a duplicate email found message
+    if user:
+        return Response({"message": "User with this email exists, please try again"}, 200, {'Content-Type': 'application/json'})
+    # else - if user does not exist, then add the new user to database, return a 201 status code with success message
+    else:
+        db.session.add(new_user)
+        db.session.commit()        
+        return Response({"message": "User added successfully"}, 201, {'Content-Type': 'application/json'})        
+
+    #return users_schema.jsonify(new_user)
 
 #POST Endpoint
 #Login for user
