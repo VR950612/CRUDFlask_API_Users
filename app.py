@@ -9,7 +9,20 @@ import os
 app = Flask(__name__)
 #Database Configuration
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'db.sqlite')
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:Adminadmin123@localhost/usersdb'
+if 'RDS_DB_NAME' in os.environ:
+    app.config['SQLALCHEMY_DATABASE_URI'] = \
+        'postgresql://{username}:{password}@{host}:{port}/{database}'.format(
+        username=os.environ['RDS_USERNAME'],
+        password=os.environ['RDS_PASSWORD'],
+        host=os.environ['RDS_HOSTNAME'],
+        port=os.environ['RDS_PORT'],
+        database=os.environ['RDS_DB_NAME'],
+    )
+else:
+    # our database uri
+    # app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'db.sqlite')
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:Adminadmin123@localhost/usersdb'
+
 
 #Initialize db
 db = SQLAlchemy()
@@ -146,5 +159,4 @@ def delete_user(id):
  
  
 if __name__ == '__main__':
-    app.run(debug=True)
-   
+    app.run(port=5004, debug=True)
